@@ -1,0 +1,25 @@
+{
+	"build_systems":
+	[
+		{
+			"name": "Gradle Project Builder",
+			"shell_cmd": "bash -ic \"gradle -b saagie/jobs/build.gradle projectsRunJob -PjobName=${file_path/^.*\\\\//} -Penv=dev\"",
+			"working_dir": "$project_path"
+		},
+		{
+			"name": "Gradle Project Builder manager (v1)",
+			"shell_cmd": "bash -ic \"gradle -b saagie/jobs/build_manager.gradle runJob -PjobName=${file_path/^.*\\\\//}\"",
+			"working_dir": "$project_path"
+		}
+	],
+	"folders":
+	[
+		{
+			"path": "."
+		}
+	],
+	"settings":
+	{
+		"python_interpreter": "tcp://localhost:9999"
+	}
+}

@@ -1,0 +1,27 @@
+# Input folder
+00-Inputs/
+
+# Data Folder
+01-Data/
+
+# Pilotage folder
+02-Steering/
+
+# Saagie folder
+saagie/test/
+**/.gradle/
+tmp/
+
+# Any __pycache__ folder
+**/__pycache__/
+
+# Sublime Text elements
+**/*.sublime-project
+**/*.sublime-workspace
+**/*.ps1
+
+# Saagie property
+saagie-properties.json
+
+# Images
+**/*.png

@@ -1,0 +1,32 @@
+image: gradle:alpine
+
+stages:
+  - test
+  - deploy
+
+unit tests:
+  tags:
+    - docker
+  stage: test
+  script:
+    - echo test
+  only:
+    - develop
+    - master
+
+deploy job to dev:
+  tags:
+    - docker
+  stage: deploy
+  script:
+  only:
+    - develop
+
+deploy job to prod:
+  tags:
+    - docker
+  stage: deploy
+  script:
+  only:
+    - master
+

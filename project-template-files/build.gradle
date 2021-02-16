@@ -1,0 +1,61 @@
+plugins {{
+    id "io.saagie.gradle-saagie-dataops-plugin" version "1.1.68"
+    id 'net.saliman.properties' version '1.5.1'
+}}
+
+
+ext.commit_message = System.getenv('CI_COMMIT_MESSAGE') + " - "+  System.getenv('CI_PROJECT_URL') + "/-/commit/" + System.getenv('CI_COMMIT_SHA')
+ext.is_ci = System.getenv('CI')
+
+def saagieExtraTechnologyLanguage = (saagieJobType == 'spark') ? saagieExtraTechnologyLanguage : null
+def saagieExtraTechnologyVersion = (saagieJobType == 'spark') ? saagieExtraTechnologyVersion : null
+def releaseMessage = (is_ci != null) ? commit_message : "WIP"
+def saagieProjectId = saagieProjectId
+def saagieJobId = (env == 'prod') ? saagieJobIdProd : saagieJobIdDev
+def saagieJobName = (env == 'prod') ? saagieJobNameProd : saagieJobNameDev
+def saagieJobIsScheduled = (saagieJobIsScheduled == 'true') ? true : false
+def saagieJobCronScheduling = (saagieJobIsScheduled == true) ? saagieJobCronScheduling : null
+def saagiePlatform = {3}
+
+task packageCode(type: Zip) {{
+    archiveFileName = "${{jobPath}}.zip"
+    destinationDirectory = file("/tmp/saagie")
+    from "../../app/${{jobPath}}", "../../app/dependencies"
+}}
+
+
+saagie {{
+    server {{
+        url = '{0}'
+        login = System.getenv('{1}')
+        password = System.getenv('{2}')
+        environment = saagiePlatform
+        jwt = true
+    }}
+    project {{
+        id = saagieProjectId
+    }}
+    job {{
+          id = saagieJobId
+          name = saagieJobName
+          description = saagieJobDescription
+          isScheduled = saagieJobIsScheduled
+          cronScheduling = saagieJobCronScheduling
+        }}
+    jobVersion {{
+        commandLine = saagieJobCommandLine
+        releaseNote = releaseMessage
+        runtimeVersion = saagieJobVersion
+        extraTechnology {{
+            language = saagieExtraTechnologyLanguage
+            version = saagieExtraTechnologyVersion
+        }}
+        packageInfo {{
+            name = "/tmp/saagie/${{jobPath}}.zip"
+        }}
+    }}
+}}
+
+
+projectsUpdateJob.dependsOn(packageCode)
+projectsRunJob.dependsOn(projectsUpdateJob)

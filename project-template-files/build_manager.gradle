@@ -1,0 +1,47 @@
+plugins {{
+  id 'io.saagie.gradle-saagie-plugin' version '2.2.1'
+  id 'net.saliman.properties' version '1.5.1'
+}}
+
+// If on GitLab, get a release message with commit link
+ext.commit_message = System.getenv('CI_COMMIT_MESSAGE') + " - "+  System.getenv('CI_PROJECT_URL') + "/-/commit/" + System.getenv('CI_COMMIT_SHA')
+ext.is_ci = System.getenv('CI')
+
+def releaseMessage = (is_ci != null) ? commit_message : "WIP"
+def jobExtraLanguage = (jobType == 'spark') ? jobExtraLanguage : null
+def jobSparkVersion = (jobType == 'spark') ? jobSparkVersion : null
+
+task packageCode(type: Zip) {{
+    archiveFileName = "${{jobPath}}.zip"
+    destinationDirectory = file("/tmp/saagie")
+    from "../../app/${{jobPath}}"
+}}
+
+saagie {{
+    server {{
+        url = "{0}/api/v1"
+        login = System.getenv('{1}')
+        password = System.getenv('{2}')
+        platform = {3}
+    }}
+    jobs {{[
+        {{
+            id = saagieJob.toInteger()
+            type = jobType
+            language = jobExtraLanguage
+            category = jobCategory
+            languageVersion = jobLanguageVersion
+            sparkVersion = jobSparkVersion
+            cpu = jobCPU.toFloat()
+            memory = jobMemory.toInteger()
+            disk = jobDisk.toInteger()
+            template = jobTemplate
+            releaseNote = releaseMessage
+        }}
+
+    ]}}
+    fileName = "/tmp/saagie/${{jobPath}}.zip"
+}}
+
+updateJob.dependsOn(packageCode)
+runJob.dependsOn(updateJob)
